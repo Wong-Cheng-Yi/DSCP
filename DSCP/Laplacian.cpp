@@ -49,7 +49,7 @@ void applyLaplacianToColorImage(Mat& inputImage, Mat& outputImage, double sharpe
 
 Mat single_Laplacian_Filter(Mat& image) {
 
-    image = loadImage("C:/Users/wongc/source/repos/DSCP/DSCP/Image/IC.png");
+    //image = loadImage("C:/Users/wongc/source/repos/DSCP/DSCP/Image/IC.png");
     
     Mat sharpenedColor;
     // Apply the Laplacian filter

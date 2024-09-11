@@ -122,7 +122,7 @@ Mat mpi_unsharp_masking(int argc, char** argv, Mat& image) {
         saveImage("C:/Users/wongc/source/repos/DSCP/DSCP/Image/Sharpened_Unsharp_Masking.png", resultImage);
     }
 
-    MPI_Finalize();
+    //MPI_Finalize();
     return resultImage;
 }
 

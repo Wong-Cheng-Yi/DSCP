@@ -80,6 +80,8 @@ void saveImage(const string& filename, const Mat& image) {
 
 int main(int argc, char** argv) {
     int choice;
+    int method;
+    Mat processed_image;
 
     cout << "1:Laplacian Filter 2:Unsharp Masking\nWhat algorithm is used:";
     while (!(cin >> choice)) {  // Check if the input is of the correct type (int in this case)
@@ -88,7 +90,7 @@ int main(int argc, char** argv) {
         cout << "Invalid input. Please enter an integer: ";
     }
 
-    int method;
+    
 
     cout << "1:OMP 2:CUDA 3:MPI 4:Single Thread\nWhat parallel platform you want to use: ";
     while (!(cin >> method)) {  // Check if the input is of the correct type (int in this case)
@@ -98,11 +100,11 @@ int main(int argc, char** argv) {
     }
 
     
-    Mat processed_image;
+    
 
-    string imagePath = "";
+    string imagePath;
+    cin.ignore();  // Ignore leftover newline character
     cout << "Image Path: ";
-
     getline(cin, imagePath);
 
     Mat image = loadImage(imagePath);
