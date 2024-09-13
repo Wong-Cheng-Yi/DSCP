@@ -19,7 +19,7 @@ void unsharpMasking(const Mat& originalImageBlock, const Mat& preprocessedBlock,
     //addWeighted(originalImageBlock, 1.5, blurred, -0.5, 0, sharpened);
     subtract(originalImageBlock, blurred, mask);
 
-    add(originalImageBlock, mask * 1.5, sharpened);
+    add(originalImageBlock, mask * 3.0, sharpened);
     outputBlock = sharpened;
 }
 
@@ -156,7 +156,7 @@ void mpi_unsharp_masking(int argc, char** argv) {
         waitKey(0); // Wait for a key press
         destroyAllWindows();
 
-        cout << "Elapsed time: " << elapsed_time / 1000 << " seconds" << endl;
+        cout << "Elapsed time: " << elapsed_time << " seconds" << endl;
     
     
     }

@@ -179,7 +179,7 @@ int main(int argc, char** argv) {
     //    waitKey(0); // Wait for a key press
     //    destroyAllWindows();
 
-    //    cout << "Time taken for to precess: " << duration.count() << " milliseconds" << endl;
+    //    cout << "Time taken for to precess: " << duration.count()/1000 << "seconds" << endl;
     //    char ans;
     //    cout << "Want to continue? (y/n)" << endl;
     //    cin >> ans;
@@ -195,9 +195,9 @@ int main(int argc, char** argv) {
 
 
     //} while (flag);
-
-    //mpi_unsharp_masking(argc, argv);
-    mpi_Laplacian_Filter(argc, argv);
+    
+    mpi_unsharp_masking(argc, argv);
+    //mpi_Laplacian_Filter(argc, argv);
     return 0;
 
 }
