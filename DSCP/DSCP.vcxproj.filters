@@ -15,13 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DSCP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Unsahrp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Laplacian.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DSCP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

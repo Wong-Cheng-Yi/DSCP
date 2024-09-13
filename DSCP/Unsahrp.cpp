@@ -14,20 +14,19 @@ Mat loadImage(const string& filename);
 void unsharpMasking(const Mat& originalImageBlock, const Mat& preprocessedBlock, Mat& outputBlock) {
     Mat blurred, mask, sharpened;
 
-    // Apply Gaussian Blur to the preprocessed image block to get a blurred version
-    //GaussianBlur(preprocessedBlock, blurred, Size(3, 3), 1.0);
+    GaussianBlur(preprocessedBlock, blurred, Size(5, 5), 1.0);
 
-    // Create the mask by subtracting the blurred image from the original image block
+    //addWeighted(originalImageBlock, 1.5, blurred, -0.5, 0, sharpened);
     subtract(originalImageBlock, blurred, mask);
 
-    // Sharpen the original image by adding the mask to the original image
-    add(originalImageBlock, mask, sharpened);
-
-    // Set the output block
+    add(originalImageBlock, mask * 1.5, sharpened);
     outputBlock = sharpened;
 }
 
 Mat single_thread_unsharp_masking(Mat& image) {
+
+
+    
 
     Mat preProcessed;
 
@@ -41,11 +40,11 @@ Mat single_thread_unsharp_masking(Mat& image) {
     // Save the result
     saveImage("C:/Users/wongc/source/repos/DSCP/DSCP/Image/Sharpened_Single.png", sharpenedImage);
 
-    return preProcessed;
+    return sharpenedImage;
 }
 
 
-Mat mpi_unsharp_masking(int argc, char** argv, Mat& image) {
+Mat mpi_unsharp_masking(int argc, char** argv) {
     MPI_Init(&argc, &argv);
 
     int world_size, world_rank;
@@ -58,8 +57,19 @@ Mat mpi_unsharp_masking(int argc, char** argv, Mat& image) {
     vector<uchar> imageData, preprocessedData;
 
     if (world_rank == 0) {
+
+        string imagePath;
+        cin.ignore();
+        cout << "Image Path: ";
+        getline(cin, imagePath);
+
+        Mat image = loadImage(imagePath);
+        if (image.empty()) {
+            cerr << "Error: Image not found!" << endl;
+            MPI_Abort(MPI_COMM_WORLD, 1);
+        }
         // Load the image
-        image = loadImage("C:/Users/wongc/source/repos/DSCP/DSCP/Image/IC.png");
+        //image = loadImage("C:/Users/wongc/source/repos/DSCP/DSCP/Image/IC.png");
         if (image.empty()) {
             cerr << "Error: Image not found!" << endl;
             MPI_Abort(MPI_COMM_WORLD, 1);
@@ -122,10 +132,54 @@ Mat mpi_unsharp_masking(int argc, char** argv, Mat& image) {
         saveImage("C:/Users/wongc/source/repos/DSCP/DSCP/Image/Sharpened_Unsharp_Masking.png", resultImage);
     }
 
-    //MPI_Finalize();
+    MPI_Finalize();
     return resultImage;
 }
 
+Mat omp_unsharp_masking(Mat& image) {
+
+    Mat preProcessed;
+
+    // Preprocess the image using the existing function
+    image_preprocessing(image, preProcessed);
+
+    Mat sharpenedImage = image.clone();
+    int rows = image.rows;
+    int cols = image.cols;
+    int block_size = 64; // Block size can be tuned for performance
+
+    // Set the number of threads for parallel processing
+    int num_threads = omp_get_max_threads();
+    omp_set_num_threads(num_threads);
+
+#pragma omp parallel for collapse(2) schedule(dynamic)
+    for (int i = 0; i < rows; i += block_size) {
+        for (int j = 0; j < cols; j += block_size) {
+            // Define the size of the block
+            int block_width = min(block_size, cols - j);
+            int block_height = min(block_size, rows - i);
+
+            // Extract the image blocks
+            Mat originalBlock = image(Rect(j, i, block_width, block_height));
+            Mat preProcessedBlock = preProcessed(Rect(j, i, block_width, block_height));
+            Mat outputBlock;
+
+            // Call the existing unsharpMasking function on each block
+            unsharpMasking(originalBlock, preProcessedBlock, outputBlock);
+
+#pragma omp critical
+            {
+                // Copy the sharpened block back to the sharpened image
+                outputBlock.copyTo(sharpenedImage(Rect(j, i, block_width, block_height)));
+            }
+        }
+    }
+
+    // Save the sharpened image result
+    saveImage("C:/Users/wongc/source/repos/DSCP/DSCP/Image/Sharpened_Unsharp_Masking.png", sharpenedImage);
+
+    return sharpenedImage;
+}
 
 
 

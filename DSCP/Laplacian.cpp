@@ -51,6 +51,9 @@ Mat single_Laplacian_Filter(Mat& image) {
 
     //image = loadImage("C:/Users/wongc/source/repos/DSCP/DSCP/Image/IC.png");
     
+    
+
+
     Mat sharpenedColor;
     // Apply the Laplacian filter
     applyLaplacianToColorImage(image, sharpenedColor, 0.2);
@@ -61,10 +64,10 @@ Mat single_Laplacian_Filter(Mat& image) {
 
 }
 
-Mat mpi_Laplacian_Filter(int argc, char** argv, Mat& image) {
+Mat mpi_Laplacian_Filter(int argc, char** argv) {
     MPI_Init(&argc, &argv);
 
-    int world_size, world_rank;
+    int world_size, world_rank = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
@@ -74,8 +77,14 @@ Mat mpi_Laplacian_Filter(int argc, char** argv, Mat& image) {
 
     if (world_rank == 0) {
         // Load the image as a color image
+        string imagePath;
+        cin.ignore();
+        cout << "Image Path: ";
+        getline(cin, imagePath);
+
+        Mat image = loadImage(imagePath);
         if (image.empty()) {
-            cout << "Error: Image not found!" << endl;
+            cerr << "Error: Image not found!" << endl;
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
 

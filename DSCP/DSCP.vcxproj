@@ -136,8 +136,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DSCP.cpp" />
     <ClCompile Include="Laplacian.cpp" />
+    <ClCompile Include="DSCP.cpp" />
     <ClCompile Include="Unsahrp.cpp" />
   </ItemGroup>
   <ItemGroup>
