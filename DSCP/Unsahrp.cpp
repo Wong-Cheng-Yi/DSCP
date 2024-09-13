@@ -44,7 +44,7 @@ Mat single_thread_unsharp_masking(Mat& image) {
 }
 
 
-Mat mpi_unsharp_masking(int argc, char** argv) {
+void mpi_unsharp_masking(int argc, char** argv) {
     MPI_Init(&argc, &argv);
 
     int world_size, world_rank;
@@ -55,6 +55,8 @@ Mat mpi_unsharp_masking(int argc, char** argv) {
     int rows, cols, channels;
     int blockSize;
     vector<uchar> imageData, preprocessedData;
+    Mat image;
+    double start_time = 0, end_time = 0, elapsed_time = 0;
 
     if (world_rank == 0) {
 
@@ -63,7 +65,7 @@ Mat mpi_unsharp_masking(int argc, char** argv) {
         cout << "Image Path: ";
         getline(cin, imagePath);
 
-        Mat image = loadImage(imagePath);
+        image = loadImage(imagePath);
         if (image.empty()) {
             cerr << "Error: Image not found!" << endl;
             MPI_Abort(MPI_COMM_WORLD, 1);
@@ -75,6 +77,8 @@ Mat mpi_unsharp_masking(int argc, char** argv) {
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
 
+        start_time = MPI_Wtime();
+
         // Preprocess the image
         image_preprocessing(image, preprocessedImage);
 
@@ -82,6 +86,7 @@ Mat mpi_unsharp_masking(int argc, char** argv) {
         cols = image.cols;
         channels = image.channels();
         blockSize = rows / world_size;
+
 
         // Flatten image data for distribution
         imageData.resize(rows * cols * channels);
@@ -127,13 +132,39 @@ Mat mpi_unsharp_masking(int argc, char** argv) {
     Mat resultImage;
 
     if (world_rank == 0) {
-        // Reconstruct and save the final sharpened image
+        end_time = MPI_Wtime(); // End the timer
+        elapsed_time = end_time - start_time;
+
+
         resultImage = Mat(rows, cols, CV_8UC3, resultData.data());
         saveImage("C:/Users/wongc/source/repos/DSCP/DSCP/Image/Sharpened_Unsharp_Masking.png", resultImage);
-    }
+        
+        namedWindow("Original Image", WINDOW_AUTOSIZE);
+        imshow("Original Image", image);
+        moveWindow("Original Image", 0, 0);
 
+        // Load and display the processed image
+        if (!resultImage.empty()) {
+            namedWindow("Processed Image", WINDOW_AUTOSIZE);
+            imshow("Processed Image", resultImage);
+            moveWindow("Processed Image", 500, 0);
+        }
+        else {
+            cout << "Could not load the processed image!" << endl;
+        }
+
+        waitKey(0); // Wait for a key press
+        destroyAllWindows();
+
+        cout << "Elapsed time: " << elapsed_time / 1000 << " seconds" << endl;
+    
+    
+    }
+    
     MPI_Finalize();
-    return resultImage;
+    // resultImage;
+   
+
 }
 
 Mat omp_unsharp_masking(Mat& image) {

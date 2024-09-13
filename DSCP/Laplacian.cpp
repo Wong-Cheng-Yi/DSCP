@@ -13,21 +13,49 @@ void image_preprocessing(Mat& image, Mat& preprocessed_image);
 void saveImage(const string& filename, const Mat& image);
 Mat loadImage(const string& filename);
 
-void applyLaplacianSharpen(const Mat& inputChannel, Mat& outputChannel, double sharpeningFactor) {
-    Mat laplacian, blurred;
 
+void apply_laplacian_single(const Mat& inputChannel, Mat& outputChannel, int width, int height, double alpha) {
+    const double laplacianKernel[3][3] = {
+        { 0, -1,  0 },
+        {-1,  4, -1 },
+        { 0, -1,  0 }
+    };
 
-    //GaussianBlur(inputChannel, blurred, Size(3, 3), 0);
+    // Iterate through each pixel
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            double result = 0.0;
 
-    Laplacian(inputChannel, laplacian, CV_16S, 3);
-    convertScaleAbs(laplacian, laplacian);
+            // Apply Laplacian kernel
+            for (int ky = -1; ky <= 1; ++ky) {
+                for (int kx = -1; kx <= 1; ++kx) {
+                    int ix = min(max(x + kx, 0), width - 1);
+                    int iy = min(max(y + ky, 0), height - 1);
+                    result += inputChannel.at<unsigned char>(iy, ix) * laplacianKernel[ky + 1][kx + 1];
+                }
+            }
 
-    /*Mat laplacianThresholded;
-    threshold(laplacian, laplacianThresholded, 10, 255, THRESH_TOZERO);*/
-
-
-    addWeighted(inputChannel, 1.0, laplacian, sharpeningFactor, 0, outputChannel);
+            // Compute new pixel value after applying the Laplacian filter and sharpening factor
+            double newVal = inputChannel.at<unsigned char>(y, x) + alpha * result;
+            outputChannel.at<unsigned char>(y, x) = saturate_cast<uchar>(newVal);  // Clamp to [0, 255]
+        }
+    }
 }
+
+
+void applyLaplacianSharpen(const Mat& inputChannel, Mat& outputChannel, double sharpeningFactor) {
+    int rows = inputChannel.rows;
+    int cols = inputChannel.cols;
+
+    // Initialize the output channel
+    outputChannel = Mat(rows, cols, CV_8UC1);
+
+    // Apply the Laplacian filter to the input image
+    apply_laplacian_single(inputChannel, outputChannel, cols, rows, sharpeningFactor);
+
+}
+
+
 
 void applyLaplacianToColorImage(Mat& inputImage, Mat& outputImage, double sharpeningFactor) {
     Mat preProcessed;
@@ -56,7 +84,7 @@ Mat single_Laplacian_Filter(Mat& image) {
 
     Mat sharpenedColor;
     // Apply the Laplacian filter
-    applyLaplacianToColorImage(image, sharpenedColor, 0.2);
+    applyLaplacianToColorImage(image, sharpenedColor, 1.0);
 
     saveImage("C:/Users/wongc/source/repos/DSCP/DSCP/Image/Sharpened_Single.png", sharpenedColor);
 
@@ -64,7 +92,7 @@ Mat single_Laplacian_Filter(Mat& image) {
 
 }
 
-Mat mpi_Laplacian_Filter(int argc, char** argv) {
+void mpi_Laplacian_Filter(int argc, char** argv) {
     MPI_Init(&argc, &argv);
 
     int world_size, world_rank = 0;
@@ -74,6 +102,8 @@ Mat mpi_Laplacian_Filter(int argc, char** argv) {
     int rows, cols, channels;
     int blockSize;
     vector<uchar> imageData;
+    Mat image;
+    double start_time = 0, end_time = 0, elapsed_time = 0;
 
     if (world_rank == 0) {
         // Load the image as a color image
@@ -82,7 +112,7 @@ Mat mpi_Laplacian_Filter(int argc, char** argv) {
         cout << "Image Path: ";
         getline(cin, imagePath);
 
-        Mat image = loadImage(imagePath);
+        image = loadImage(imagePath);
         if (image.empty()) {
             cerr << "Error: Image not found!" << endl;
             MPI_Abort(MPI_COMM_WORLD, 1);
@@ -93,6 +123,8 @@ Mat mpi_Laplacian_Filter(int argc, char** argv) {
             cout << "Error: Input image does not have 3 channels!" << endl;
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
+
+        start_time = MPI_Wtime();
 
         rows = image.rows;
         cols = image.cols;
@@ -132,13 +164,39 @@ Mat mpi_Laplacian_Filter(int argc, char** argv) {
     Mat resultImage;
 
     if (world_rank == 0) {
+
+
+        end_time = MPI_Wtime(); // End the timer
+        elapsed_time = end_time - start_time;
+
+
+        
+        
         // Reconstruct the image from result data
         resultImage = Mat(rows, cols, CV_8UC3, resultData.data());
 
         // Save the final sharpened image
         saveImage("C:/Users/wongc/source/repos/DSCP/DSCP/Image/Sharpened_Laplacian.png", resultImage);
-    }
 
+        namedWindow("Original Image", WINDOW_AUTOSIZE);
+        imshow("Original Image", image);
+        moveWindow("Original Image", 0, 0);
+
+        if (!resultImage.empty()) {
+            namedWindow("Processed Image", WINDOW_AUTOSIZE);
+            imshow("Processed Image", resultImage);
+            moveWindow("Processed Image", 500, 0);
+        }
+        else {
+            cout << "Could not load the processed image!" << endl;
+        }
+        waitKey(0); // Wait for a key press
+        destroyAllWindows();
+
+        cout << "Elapsed time: " << elapsed_time << " seconds" << endl;
+        
+    }
+    
     MPI_Finalize();
-    return resultImage;
+    //return resultImage;
 }
