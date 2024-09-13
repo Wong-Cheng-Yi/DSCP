@@ -24,10 +24,18 @@
     <ClCompile Include="DSCP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="chart.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="matplotlibcpp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="x64\Debug\arial.ttf">
+      <Filter>Resource Files</Filter>
+    </Font>
   </ItemGroup>
 </Project>

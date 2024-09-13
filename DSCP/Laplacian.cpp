@@ -14,11 +14,12 @@ void saveImage(const string& filename, const Mat& image);
 Mat loadImage(const string& filename);
 
 
+
 void apply_laplacian_single(const Mat& inputChannel, Mat& outputChannel, int width, int height, double alpha) {
     const double laplacianKernel[3][3] = {
-        { 0, -1,  0 },
-        {-1,  4, -1 },
-        { 0, -1,  0 }
+        { 0, 1,  0 },
+        {1,  4, 1 },
+        { 0, 1,  0 }
     };
 
     // Iterate through each pixel
@@ -108,7 +109,7 @@ void mpi_Laplacian_Filter(int argc, char** argv) {
     if (world_rank == 0) {
         // Load the image as a color image
         string imagePath;
-        cin.ignore();
+        ///cin.ignore();
         cout << "Image Path: ";
         getline(cin, imagePath);
 

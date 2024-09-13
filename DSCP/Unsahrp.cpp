@@ -61,7 +61,7 @@ void mpi_unsharp_masking(int argc, char** argv) {
     if (world_rank == 0) {
 
         string imagePath;
-        cin.ignore();
+        //cin.ignore();
         cout << "Image Path: ";
         getline(cin, imagePath);
 
