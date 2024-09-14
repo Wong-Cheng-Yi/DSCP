@@ -17,9 +17,9 @@ Mat loadImage(const string& filename);
 
 void apply_laplacian_single(const Mat& inputChannel, Mat& outputChannel, int width, int height, double alpha) {
     const double laplacianKernel[3][3] = {
-        { 0, 1,  0 },
-        {1,  4, 1 },
-        { 0, 1,  0 }
+        { 0, -1,  0 },
+        {-1,  4, -1 },
+        { 0, -1,  0 }
     };
 
     // Iterate through each pixel

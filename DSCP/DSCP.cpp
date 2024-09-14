@@ -4,7 +4,7 @@
 #include <vector>
 #include <omp.h>
 #include <limits>
-#include <chrono>
+#include <ctime>
 #include "SFML/Graphics.hpp"
 using namespace std::chrono;
 
@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
 
         
 
-        auto start = high_resolution_clock::now();
+        clock_t start_time = clock();
 
         switch (choice) {
         case 1:
@@ -206,9 +206,9 @@ int main(int argc, char** argv) {
             BarChart(executionTimes);
             break;
         }
-        auto stop = high_resolution_clock::now();
+        clock_t end_time = clock();
 
-        auto duration = duration_cast<milliseconds>(stop - start);
+        double time_taken = double(end_time - start_time) / CLOCKS_PER_SEC;
 
         if (choice != 3) {
             // Display the original image
@@ -234,7 +234,8 @@ int main(int argc, char** argv) {
         }
 
         if (choice != 3) {
-            cout << "Time taken for to precess: " << duration.count() / 1000 << "seconds" << endl;
+         
+            cout << "Time taken for to precess: " << time_taken << "seconds" << endl;
 
         }
 

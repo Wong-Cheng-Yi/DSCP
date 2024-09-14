@@ -14,12 +14,12 @@ Mat loadImage(const string& filename);
 void unsharpMasking(const Mat& originalImageBlock, const Mat& preprocessedBlock, Mat& outputBlock) {
     Mat blurred, mask, sharpened;
 
-    GaussianBlur(preprocessedBlock, blurred, Size(5, 5), 1.0);
+  /*  GaussianBlur(preprocessedBlock, blurred, Size(5, 5), 1.0);*/
 
     //addWeighted(originalImageBlock, 1.5, blurred, -0.5, 0, sharpened);
-    subtract(originalImageBlock, blurred, mask);
+    subtract(originalImageBlock, preprocessedBlock, mask);
 
-    add(originalImageBlock, mask * 3.0, sharpened);
+    add(originalImageBlock, mask *1.5, sharpened);
     outputBlock = sharpened;
 }
 
@@ -95,6 +95,8 @@ void mpi_unsharp_masking(int argc, char** argv) {
         // Flatten preprocessed image data
         preprocessedData.resize(rows * cols * channels);
         memcpy(preprocessedData.data(), preprocessedImage.data, preprocessedData.size());
+
+        start_time = MPI_Wtime();
     }
 
     // Broadcast image dimensions and block size
